@@ -17,6 +17,15 @@ def brightness(color):
     r,g,b = color
     return (r+g+b)/3
 
+def avgBrightness(img):
+    w = img.width
+    h=img.height
+    px = img.load()
+    total = 0
+    for y in range(h):
+        for x in range(w):
+            total += brightness(px[x,y])
+    return total // (w*h)
 
 
 
@@ -286,12 +295,7 @@ def negate(img):
     for y in range(h):
         for x in range(w):
             r,g,b = px[x,y]
-            if w>h:
-                px[x,y] = (255-r,255-g,255-b)
-            if h>w:
-                px[x,y] = (255-r,255-g,255-b)
-            else:
-                px[x,y] = (255-r,255-g,255-b)
+            px[x,y] = (255-r,255-g,255-b)
     return(img)
 
 
@@ -303,12 +307,47 @@ def negate(img):
 # argument: Image 
 # returns the Image
 
-
+def intensify(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    for y in range(h):
+        for x in range(w):
+            r,g,b = px[x,y]
+            if r>= 128:
+                r = 255
+            else:
+                r=0
+            if g>=128:
+                g = 255
+            else:
+                g=0
+            if b>=128:
+                b= 255
+            else:
+                b=0
+            px[x,y] = (r,g,b)
+                    
+    return(img)
+    
 
 # blackWhite()
 # argument: Image 
 # returns the Image
-    
+
+def blackWhite(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    cutoff = avgBrightness(img)
+    for y in range(h):
+        for x in range(w):
+            b = brightness(px[x,y])
+            if b>=cutoff:
+                px[x,y] = (255,255,255)
+            else:
+                px[x,y] = (0,0,0)
+    return(img)
 
 
 
@@ -316,6 +355,19 @@ def negate(img):
 # arguments: Image, color, color (colors are triplets) 
 # returns the Image
 
+def twoColor(img, color1,color2):
+    w = img.width
+    h = img.height
+    px = img.load()
+    cutoff = avgBrightness(img)
+    for y in range(h):
+        for x in range(w):
+            b = brightness(px[x,y])
+            if b>=cutoff:
+                px[x,y] = color2
+            else:
+                px[x,y] = color1
+    return(img)
 
 
 
@@ -324,14 +376,41 @@ def negate(img):
 # arguments: Image, color, color, color, color (colors are triplets) 
 # returns the Image
 
-
+def fourColor(img, color1,color2,color3,color4):
+    w = img.width
+    h = img.height
+    px = img.load()
+    for y in range(h):
+        for x in range(w):
+            b = brightness(px[x,y])
+            if b<64:
+                px[x,y] = color1
+            elif b<128:
+                px[x,y] = color2
+            elif b<192:
+                px[x,y] = color3
+            else:
+                px[x,y] = color4
+    return(img)
 
 
 # lineDrawing()
 # argument: Image 
 # returns the Image
 
-
+def lineDrawing(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    for y in range(h):
+        for x in range(w-1):
+            b1 = brightness(px[x,y])
+            b2 = brightness(px[x+1,y])
+            if abs(b1-b2)>2:
+                px[x,y] = (0,0,0)
+            else:
+                px[x,y] = (255,255,255)
+    return img
 
 
 #------part 4 functions-----------
@@ -340,19 +419,62 @@ def negate(img):
 # argument: Image 
 # returns the Image
 
-
+def plainBorder(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    for y in range(10):
+        for x in range(w):
+            px[x, y] = (0, 0, 0)
+    for y in range(h - 10, h):
+        for x in range(w):
+            px[x, y] = (0, 0, 0)
+    for y in range(h):
+        for x in range(10):
+            px[x, y] = (0, 0, 0)
+    for y in range(h):
+        for x in range(w - 10, w):
+            px[x, y] = (0, 0, 0)
+    return img
 
 
 # colorBorder()
 # arguments: Image, color (triplet), thickness (int) 
 # returns the Image
 
-
+def colorBorder(img,color,thickness):
+    w = img.width
+    h = img.height
+    px = img.load()
+    for y in range(thickness):
+        for x in range(w):
+            px[x, y] = color
+    for y in range(h - thickness, h):
+        for x in range(w):
+            px[x, y] = color
+    for y in range(h):
+        for x in range(thickness):
+            px[x, y] = color
+    for y in range(h):
+        for x in range(w - thickness, w):
+            px[x, y] = color
+    return img
 
 
 # fadeVert()
 # argument: Image 
 # returns the Image
+
+def fadeVert(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    for y in range(h):
+        percentage = y/(h-1)
+        for x in range(w):
+            r,g,b = px[x,y]
+            px[x,y] =(int(r * percentage), int(g * percentage), int(b * percentage))
+    return img
 
 
 
@@ -360,7 +482,16 @@ def negate(img):
 # fadeHoriz()
 # argument: Image 
 # returns the Image
-
+def fadeHoriz(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    for y in range(h):
+        for x in range(w):
+            percentage = x/(w-1)
+            r,g,b = px[x,y]
+            px[x,y] =(int(r * percentage), int(g * percentage), int(b * percentage))
+    return img
 
 
 
@@ -371,18 +502,43 @@ def negate(img):
 # argument: Image 
 # returns the Image
 
+def mirrorHoriz(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    for y in range(h):
+        for x in range(w//2):
+            px[w-1-x,y] = px[x,y]
+    return img
 
 
 # mirrorVert()
 # argument: Image 
 # returns the Image
-
+def mirrorHoriz(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    for y in range(h//2):
+        for x in range(w):
+            px[x,h-1-y] = px[x,y]
+    return img
 
 
 
 # flipHoriz()
 # argument: Image 
 # returns a new Image
+def flipHoriz(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    newImg = Image.new("RGB", (w, h))
+    newPx = newImg.load()
+    for y in range(h):
+        for x in range(w):
+            newPx[w - 1 - x, y] = px[x, y]
+    return newImg
 
 
 
@@ -392,6 +548,17 @@ def negate(img):
 # argument: Image 
 # returns a new Image
 
+def flipVert(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    newImg = Image.new("RGB", (w, h))
+    newPx = newImg.load()
+    for y in range(h):
+        for x in range(w):
+            newPx[x, h - 1 - y] = px[x, y]
+    return newImg
+
 
 
 
@@ -400,13 +567,35 @@ def negate(img):
 # argument: Image 
 # returns a new Image
 
+def shrink(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    newImg = Image.new("RGB", (w // 2, h // 2))
+    newPx = newImg.load()
+    for y in range(h // 2):
+        for x in range(w // 2):
+            newPx[x, y] = px[x * 2, y * 2]  
+    return newImg
 
 
 
 # enlarge()
 # argument: Image 
 # returns a new Image
-
+def enlarge(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    newImg = Image.new("RGB", (w * 2, h * 2))
+    newPx = newImg.load()
+    for y in range(h):
+        for x in range(w):
+            newPx[x * 2,     y * 2]     = px[x, y]
+            newPx[x * 2 + 1, y * 2]     = px[x, y]
+            newPx[x * 2,     y * 2 + 1] = px[x, y]
+            newPx[x * 2 + 1, y * 2 + 1] = px[x, y]
+    return newImg
 
 
 
@@ -414,6 +603,16 @@ def negate(img):
 # rotateRight()
 # argument: Image 
 # returns a new Image
+def rotateRight(img):
+    w = img.width
+    h = img.height
+    px = img.load()
+    newImg = Image.new("RGB", (h, w))  # width/height are swapped!
+    newPx = newImg.load()
+    for y in range(h):
+        for x in range(w):
+            newPx[h - 1 - y, x] = px[x, y]
+    return newImg
 
 
 
@@ -455,9 +654,9 @@ def negate(img):
 # -- only function definitions above this line ----
 #----------test your functions below -----
 
-picture = Image.open('bear.jpg')
+picture = Image.open('neptune.jpg')
 
-picture = negate(picture)
+picture = blackWhite(picture)
 
 picture.show()
 
